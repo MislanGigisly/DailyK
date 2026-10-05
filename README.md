@@ -1,78 +1,82 @@
-# React + TypeScript + Vite
+# Daylik
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Пет-проект: таск-менеджер. Делаю его, чтобы на практике прокачать React, TypeScript и архитектуру фронтенд-приложений — с прицелом на переход в профессиональную frontend-разработку.
 
-Currently, two official plugins are available:
+> Статус: ранняя стадия разработки. Базовая сборка настроена, архитектура спроектирована, часть модулей ещё в работе. Актуальный прогресс — в [Issues](../../issues) и в этом README.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Стек
 
-## React Compiler
+- [Vite](https://vite.dev/) — сборка и дев-сервер
+- [React 19](https://react.dev/) + [React Compiler](https://react.dev/learn/react-compiler) — автоматическая мемоизация без ручных `useMemo`/`useCallback`
+- [TypeScript](https://www.typescriptlang.org/) — строгая типизация
+- [React Router](https://reactrouter.com/) (data mode) — маршрутизация
+- [TanStack Query](https://tanstack.com/query) — работа с асинхронными данными, кеш, состояния загрузки/ошибок
+- CSS Modules — изолированные стили компонентов
+- ESLint — линтинг
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Архитектура
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Структура организована по фичам, а не по типам файлов:
 
 ```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+src/
+  app/            # сборка приложения: роутер, провайдеры, глобальные стили
+  layouts/        # каркасы страниц (шапка, навигация, Outlet)
+  pages/          # страницы — точки входа для фич
+  features/
+    tasks/
+      api/        # доступ к данным: интерфейс + реализации
+      model/      # типы, хуки работы с данными
+      components/ # компоненты, специфичные для задач
+  shared/
+    ui/           # переиспользуемые UI-компоненты без бизнес-логики
+    lib/          # общие утилиты и хуки
 ```
+
+Правило зависимостей: `shared` ничего не знает про `features`, `features` ничего не знают про `pages`. Зависимости идут только в одну сторону.
+
+### Хранение данных
+
+Слой данных спрятан за интерфейсом `TasksRepository` (`list`, `create`, `update`, `remove`), поэтому способ хранения можно менять, не трогая компоненты и хуки:
+
+- **локально** — реализация на `localStorage`, с версионированием ключа и обработкой повреждённых данных;
+- **по API** — реализация поверх [DummyJSON](https://dummyjson.com/docs/todos) для работы с реальными HTTP-запросами (без постоянного сохранения на сервере).
+
+Используемая реализация выбирается в одном месте — `features/tasks/api/index.ts`.
+
+## Запуск проекта
+
+Требуется Node.js.
+
+```bash
+npm install
+npm run dev
+```
+
+Приложение откроется на адресе, который выведет Vite в терминал (обычно `http://localhost:5173`).
+
+### Другие команды
+
+```bash
+npm run build     # проверка типов (tsc -b) + продакшен-сборка
+npm run preview   # локальный просмотр собранной сборки
+npm run lint      # проверка кода ESLint
+```
+
+## Roadmap
+
+- [x] Инициализация проекта на Vite (React + TypeScript + React Compiler)
+- [ ] Подключение React Router, базовые страницы и лейаут
+- [ ] Глобальные стили: сброс + CSS-токены
+- [ ] CRUD задач на `localStorage`
+- [x] Алиас `@` для импортов
+- [ ] Интеграция с DummyJSON через TanStack Query
+- [ ] Формы и валидация
+- [ ] Тесты
+- [ ] Деплой
+
+## Ограничения
+
+- Это учебный пет-проект, не продакшен-сервис.
+- При использовании API-реализации (DummyJSON) данные не сохраняются постоянно: это публичный заглушечный сервис, он возвращает правдоподобный ответ на запись/изменение, но не хранит его по-настоящему.
+- При работе на `localStorage` данные привязаны к конкретному браузеру и устройству и не защищены от очистки данных сайта.
