@@ -66,10 +66,10 @@ npm run lint      # проверка кода ESLint
 ## Roadmap
 
 - [x] Инициализация проекта на Vite (React + TypeScript + React Compiler)
+- [x] Алиас `@` для импортов
 - [ ] Подключение React Router, базовые страницы и лейаут
 - [ ] Глобальные стили: сброс + CSS-токены
 - [ ] CRUD задач на `localStorage`
-- [x] Алиас `@` для импортов
 - [ ] Интеграция с DummyJSON через TanStack Query
 - [ ] Формы и валидация
 - [ ] Тесты
